@@ -20,22 +20,23 @@ module.exports = (service, port) => {
 	var seneca = Seneca();
 
 	//Custom code to handle global errors
-	(function(seneca, add){
-		seneca.add = function(obj, func){
-			// console.log(typeof arguments[1] === "function");
-			var originalFunction = arguments[1];
-			arguments[1]= function(){
-				try{
-					originalFunction.apply(this, arguments)
-				}catch(e){
-					arguments[1](null, {answer: 'something went wrong.'});
-					console.error(e);
-				}
-			};
-
-			add.apply(this, arguments);
-		}
-	})(seneca, seneca.add)
+	// (function(seneca, add){
+	// 	seneca.add = function(obj, func){
+	// 		var originalFunction = arguments[1];
+	// 		// console.log(typeof arguments[1] === "function");
+	// 		console.log ( obj );
+	// 		arguments[1]= function(){
+	// 			try{
+	// 				originalFunction.apply(this, arguments)
+	// 			}catch(e){
+	// 				arguments[1](null, {answer: 'something went wrong.'});
+	// 				console.error(e);
+	// 			}
+	// 		};
+	//
+	// 		add.apply(this, arguments);
+	// 	}
+	// })(seneca, seneca.add)
 
 	seneca
 		.use(Plugin)

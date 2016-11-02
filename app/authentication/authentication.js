@@ -7,17 +7,16 @@ firebase.initializeApp({
 
 module.exports = function authentication(){
 	var seneca = this
+
 	seneca.add({service:'authentication',cmd:'verify'}, (msg, done) => {
-		// console.log(msg.idToken);
 		firebase.auth().verifyIdToken(msg.idToken).then(function(decodedToken) {
 			console.log('successfully authenticated');
-			done(null, {answer: true})
+			done(null, {answer: "authenticated"})
 		}).catch(function(error) {
 			console.log(error);
 			done(null, {answer: error})
 		});
 	});
-
 };
 
 
