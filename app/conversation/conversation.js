@@ -1,29 +1,47 @@
 module.exports = function conversation() {
 	seneca = this;
-	var persistenceService = seneca.client({pin: 'service:persistence'});
+	var persistenceService = seneca.client({pin: 'service:persistence', port: 4027, type: 'tcp'});
 
 	seneca.add('service:conversation,cmd:createConversation', (msg, reply) => {
+		var body = JSON.parse(msg.args.body);
+		if (!body.data) {
+			console.warn('invalid data');
+			reply(null, {answer: "invalid call to user::createUser"});
+			return;
+		}
+
 		persistenceService.act(
 			{
 				service: 'persistence',
 				cmd: 'add',
 				ref: '/conversation',
+				idToken: body.idToken,
 				data: {
-					admin: '${currentUser}',
-					name: 'kdmaskmds'
+					admin: '{userId}',
+					name: body.name
 				}
-			}).then((data) => {
-			persistenceService.act(
-				{
+			}, (reply, response) => {
+				persistenceService.act({
 					service: 'persistence',
-					cmd: 'add',
-					ref: `/user/${currentUser}/conversation`,
-					data: {
-						admin: '${currentUser}',
-						name: 'kdmaskmds'
-					}
+					cmd: 'set',
+					ref: `/user/{userId}/conversations/${response.key}`,
+					idToken: body.idToken,
+					data: true
 				});
-		});
+				console.log(response);
+			});
+		// , (data) => {
+		// persistenceService.act(
+		// 	{
+		// 		service: 'persistence',
+		// 		cmd: 'add',
+		// 		idToken : body.idToken,
+		// 		ref: `/user/{uuid}/conversation`,
+		// 		data: {
+		// 			admin: '${currentUser}',
+		// 			name: 'kdmaskmds'
+		// 		}
+		// 	});
 		//todo get ID from convo
 
 		reply(null, {answer: "conversation created"})
@@ -42,26 +60,18 @@ module.exports = function conversation() {
 	});
 
 	seneca.add({service: 'conversation', cmd: 'sendMessage'}, (msg, reply) => {
-		client.act({service: 'persistence', cmd: 'add', idToken: 1234}, function (answer, response) {
-			if (response.answer === "authenticated") {
-				console.log(response.answer);
-				prior(msg, respond);
-			}
-		});
-		reply(null, {answer: true})
+		persistenceService.act(
+			{
+				service: 'persistence',
+				cmd: 'add',
+				ref: '/conversation/{conversationID}',
+				idToken: body.idToken,
+				data: {
+					admin: '{userId}',
+					name: body.name
+				}
+			});
 	});
-
-	seneca.wrap('service:conversation', function (msg, respond) {
-		var prior = this.prior;
-		//add conversation service validation
-		client.act({service: 'authentication', cmd: 'verify', idToken: 1234}, function (answer, response) {
-			if (response.answer === "authenticated") {
-				console.log(response.answer);
-				prior(msg, respond);
-			}
-		});
-	});
-
 };
 
 

@@ -7,6 +7,9 @@ module.exports = [
     map: {
       message: {
         DELETE : true
+      },
+      createConversation : {
+        POST : true
       }
     }
   },

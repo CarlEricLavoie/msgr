@@ -50,7 +50,7 @@ module.exports = function persistence(){
 
 		database.ref(`${msg.ref}/${key}`).set(msg.data);
 
-		reply(null, {answer: "success"})
+		reply(null, {answer: "success", key:key})
 	});
 
 	seneca.add({service:'persistence',cmd:'delete'}, (msg, reply) => {
@@ -71,11 +71,25 @@ module.exports = function persistence(){
 		if(msg.args && msg.args.body){
 			msg = JSON.parse(msg.args.body);
 		}
-		console.log(`called to persistence with load :: ${JSON.stringify(msg)}`);
 
 		authenticationService.act({service:'authentication',cmd:'verify', idToken : msg.idToken},function(answer, response){
+
+
+			function stringInterpolate(payload){
+				for(var key in payload){
+					if(typeof payload[key] === 'string'){
+						payload[key] = payload[key].replace('{userId}', response.uid);
+					}else if(typeof payload[key] === 'number'){
+
+					}else if(typeof payload[key] === 'object'){
+						stringInterpolate(payload[key]);
+					}
+				}
+			}
+
+
 			if(response.answer === "authenticated"){
-				msg.ref = msg.ref.replace('{uuid}', response.uid);
+				stringInterpolate(msg);
 				prior(msg, respond);
 			}else{
 				respond(null, {answer : 'Authentication error'})
