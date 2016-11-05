@@ -7,17 +7,11 @@ module.exports = [
     map: {
       set: {
         POST: true
+      },
+      get: {
+        GET : true
       }
     }
   },
-  // {
-  //   prefix: '/admin',
-  //   pin: 'role:admin,cmd:*',
-  //   map: {
-  //     validate: {
-  //       POST: true,
-  //       alias: '/manage'
-  //     }
-  //   }
-  // }
-]
+
+];
