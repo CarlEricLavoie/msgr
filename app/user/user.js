@@ -5,34 +5,21 @@ module.exports = function user(){
 
 
 	seneca.add({service:'user',cmd:'createUser'}, (msg, reply) => {
-		var body = JSON.parse(msg.args.body);
-		if(!body.data){
-			console.warn('invalid data');
-			reply(null, {answer: "invalid call to user::createUser"});
-			return;
-		}
-
-		persistenceService.act({service:'persistence',cmd:'set',ref:"/user/{userId}", idToken:body.idToken, data:body.data}, (reply) => {
+		persistenceService.act({service:'persistence',cmd:'set',ref:"/user/{userId}", idToken:msg.cookies.idToken, data:{name:msg.name, age:msg.age}}, (reply) => {
 			console.log(reply);
 		});
 		reply(null, {answer: "success"})
 	});
 
 
-
-	// seneca.wrap({service:'user'}, function (msg, respond) {
-	// 	//add conversation service validation
-	//
-	// 	var body = JSON.parse(msg.args.body);
-	// 	authenticationService.act({service:'authentication',cmd:'verify', idToken : body.idToken},function(answer, response){
-	// 		if(response.answer === "authenticated"){
-	// 		// if(true){
-	// 			console.log(response.answer);
-	// 			prior(body, respond);
-	// 		}else{
-	// 			respond(null, {answer : 'Authentication error'})
-	// 		}
-	// 	});
-	// 	var prior = this.prior;
-	// });
+	seneca.wrap({service:'user'}, function(msg, respond) {
+		var body = JSON.parse(msg.args.body);
+		var cookies = msg.request$.cookies;
+		msg = {};
+		for(var entry in body){
+			msg[entry]=body[entry];
+		}
+		msg.cookies = cookies;
+		this.prior(msg,respond);
+	})
 };

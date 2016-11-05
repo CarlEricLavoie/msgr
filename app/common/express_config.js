@@ -16,12 +16,19 @@ module.exports = (service, port) => {
 	var app = Express()
 	app.use(CookieParser())
 	app.use(BodyParser.urlencoded({extended: true}))
+	var http = require('http').Server(app);
+	// var io = require("socket.io")(http);
 
 	var config = {
 		routes: Routes,
 		adapter: require('seneca-web-adapter-express'),
-		context: Express()
+		context: app
 	};
+
+	// io.on('connection', function(socket){
+	// 	console.log('a user connected');
+	// });
+
 
 	var seneca = Seneca();
 

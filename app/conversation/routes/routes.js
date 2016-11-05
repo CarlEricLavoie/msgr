@@ -5,11 +5,14 @@ module.exports = [
     prefix: '/',
     pin: 'service:conversation,cmd:*',
     map: {
-      message: {
-        DELETE : true
+      sendMessage: {
+        POST : true
       },
       createConversation : {
         POST : true
+      },
+      getConversations : {
+        GET : true
       }
     }
   },

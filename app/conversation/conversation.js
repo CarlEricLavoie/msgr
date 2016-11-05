@@ -2,57 +2,57 @@ module.exports = function conversation() {
 	seneca = this;
 	var persistenceService = seneca.client({pin: 'service:persistence', port: 4027, type: 'tcp'});
 
-	seneca.add('service:conversation,cmd:createConversation', (msg, reply) => {
-		var body = JSON.parse(msg.args.body);
-		if (!body.data) {
-			console.warn('invalid data');
-			reply(null, {answer: "invalid call to user::createUser"});
-			return;
-		}
+	seneca.add({service: 'conversation', cmd: 'createConversation'}, (msg, reply) => {
 
 		persistenceService.act(
 			{
 				service: 'persistence',
 				cmd: 'add',
 				ref: '/conversation',
-				idToken: body.idToken,
+				idToken: msg.cookies.idToken,
 				data: {
 					admin: '{userId}',
-					name: body.name
+					name: msg.name
 				}
 			}, (reply, response) => {
 				persistenceService.act({
 					service: 'persistence',
 					cmd: 'set',
 					ref: `/user/{userId}/conversations/${response.key}`,
-					idToken: body.idToken,
+					idToken: msg.cookies.idToken,
 					data: true
 				});
-				console.log(response);
 			});
-		// , (data) => {
-		// persistenceService.act(
-		// 	{
-		// 		service: 'persistence',
-		// 		cmd: 'add',
-		// 		idToken : body.idToken,
-		// 		ref: `/user/{uuid}/conversation`,
-		// 		data: {
-		// 			admin: '${currentUser}',
-		// 			name: 'kdmaskmds'
-		// 		}
-		// 	});
-		//todo get ID from convo
-
 		reply(null, {answer: "conversation created"})
 	});
 
 	seneca.add({service: 'conversation', cmd: 'getConversations'}, (msg, reply) => {
-		persistenceService.act({
-			service: 'persistence',
-			cmd: 'get',
-			ref: `/user/${currentUser}/conversation`
-		})
+		var convos = [];
+		persistenceService.act(
+			{
+				service: 'persistence',
+				cmd: 'get',
+				ref: `/user/{userId}/conversations/`,
+				idToken: msg.cookies.idToken
+			}, (err, result) => {
+
+				var itemsLength = Object.keys(result.answer).length;
+				function replyHandler(err, result){
+					convos.push(result.answer);
+					if(convos.length >= itemsLength){
+						reply(null, convos);
+					}
+				}
+
+				for(convo in result.answer){
+					persistenceService.act({
+						service: 'persistence',
+						cmd: 'get',
+						ref: `/conversation/${convo}`,
+						idToken: msg.cookies.idToken
+					}, replyHandler)
+				}
+			});
 	});
 
 	seneca.add({service: 'conversation', cmd: 'getMessages'}, (msg, reply) => {
@@ -64,14 +64,32 @@ module.exports = function conversation() {
 			{
 				service: 'persistence',
 				cmd: 'add',
-				ref: '/conversation/{conversationID}',
-				idToken: body.idToken,
+				ref: `/conversation/${msg.conversationId}/messages`,
+				idToken: msg.cookies.idToken,
 				data: {
-					admin: '{userId}',
-					name: body.name
+					msg: `${msg.msg}`,
+					timestamp: `${Date.now()}`
 				}
 			});
+		reply(null, {answer: "success"})
 	});
+
+
+
+
+	seneca.wrap({service:'conversation'}, function(msg, respond) {
+		var body = {};
+		if(msg.args && msg.args.body){
+			body = JSON.parse(msg.args.body);
+		}
+		var cookies = msg.request$.cookies;
+		msg = {};
+		for(var entry in body){
+			msg[entry]=body[entry];
+		}
+		msg.cookies = cookies;
+		this.prior(msg,respond);
+	})
 };
 
 

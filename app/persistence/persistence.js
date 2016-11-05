@@ -35,8 +35,9 @@ module.exports = function persistence(){
 			reply(null, {answer: "invalid call to persistence::get"});
 			return;
 		}
+
 		database.ref(msg.ref).once('value').then(function(snapshot) {
-			reply(null, {answer: snapshot});
+			reply(null, {answer: snapshot.val()});
 		});
 	});
 
@@ -67,7 +68,6 @@ module.exports = function persistence(){
 
 	seneca.wrap({service:'persistence'}, function (msg, respond) {
 		//add conversation service validation
-
 		if(msg.args && msg.args.body){
 			msg = JSON.parse(msg.args.body);
 		}
