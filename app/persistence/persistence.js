@@ -43,12 +43,12 @@ module.exports = function persistence(){
 	seneca.add({service:'persistence',cmd:'add'}, (msg, reply) => {
 		if(!msg.ref || !msg.data){
 			console.log('invalid data');
-			reply(null, {answer: "invalid call to persistence::set"});
+			reply(null, {answer: "invalid call to persistence::add"});
 			return;
 		}
 		var key = database.ref(msg.ref).push().key;
 
-		database.ref(`${msg.ref}/${key}`).set(data);
+		database.ref(`${msg.ref}/${key}`).set(msg.data);
 
 		reply(null, {answer: "success"})
 	});
@@ -75,8 +75,7 @@ module.exports = function persistence(){
 
 		authenticationService.act({service:'authentication',cmd:'verify', idToken : msg.idToken},function(answer, response){
 			if(response.answer === "authenticated"){
-			// if(true){
-				console.log(response.answer);
+				msg.ref = msg.ref.replace('{uuid}', response.uid);
 				prior(msg, respond);
 			}else{
 				respond(null, {answer : 'Authentication error'})

@@ -12,7 +12,7 @@ module.exports = function user(){
 			return;
 		}
 
-		persistenceService.act({service:'persistence',cmd:'set',ref:"/test", idToken:body.idToken, data:body.data}, (reply) => {
+		persistenceService.act({service:'persistence',cmd:'set',ref:"/user/{uuid}", idToken:body.idToken, data:body.data}, (reply) => {
 			console.log(reply);
 		});
 		reply(null, {answer: "success"})

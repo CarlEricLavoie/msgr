@@ -11,7 +11,7 @@ module.exports = function authentication(){
 	seneca.add({service:'authentication',cmd:'verify'}, (msg, done) => {
 		firebase.auth().verifyIdToken(msg.idToken).then(function(decodedToken) {
 			console.log('successfully authenticated');
-			done(null, {answer: "authenticated"})
+			done(null, {answer: "authenticated", uid:decodedToken.uid})
 		}).catch(function(error) {
 			console.log(error);
 			done(null, {answer: error})
