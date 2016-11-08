@@ -1,0 +1,22 @@
+{
+  "name": "msgr",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.1",
+    "express": "^4.14.0",
+    "firebase": "^3.5.3",
+    "lodash": "^4.16.6",
+    "seneca": "^3.2.2",
+    "seneca-web": "^2.0.0",
+    "seneca-web-adapter-express": "^1.0.2"
+  }
+}
