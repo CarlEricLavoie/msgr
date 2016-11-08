@@ -13,6 +13,18 @@ module.exports = [
       },
       getConversations : {
         GET : true
+      },
+      getConversation : {
+        GET : true
+      },
+      addUser : {
+        POST : true
+      },
+      getUsers : {
+        GET : true
+      },
+      getMessages : {
+        GET : true
       }
     }
   },

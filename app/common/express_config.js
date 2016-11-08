@@ -11,9 +11,11 @@ var BodyParser = require('body-parser')
 module.exports = (service, port) => {
 	var Routes = require(`../${service}/routes/routes`);
 	var Plugin = require(`../${service}/${service}`);
+	const cors = require('cors');
 
 	// Prep express
-	var app = Express()
+	var app = Express();
+	app.use(cors());
 	app.use(CookieParser())
 	app.use(BodyParser.urlencoded({extended: true}))
 	var http = require('http').Server(app);
@@ -64,6 +66,57 @@ module.exports = (service, port) => {
 
 	seneca.use(Plugin)
 		.listen({port:20+port, type:'tcp'})
+
+	subscribeServices(Routes, port);
+}
+
+function subscribeServices(routes, port){
+
+	for(var route of routes){
+		// console.log(route);
+		for(var endpoint in route.map){
+			for(var method in route.map[endpoint]){
+				subscribeService(endpoint, method, port, "/test")
+			}
+		}
+	}
+}
+
+var http = require('http');
+function subscribeService(serviceName, method, port, prefix){
+
+
+
+	var postData = require('querystring').stringify({
+		serviceName,
+		method : method.toLowerCase(),
+		port,
+		prefix
+	});
+
+	var options = {
+		hostname: 'localhost',
+		port: 3000,
+		path: '/service',
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+			'Content-Length': Buffer.byteLength(postData)
+		}
+	};
+
+
+	var req = http.request(options, (res) => {
+	});
+
+	req.on('error', (e) => {
+		console.log(`problem with request: ${e.message}`);
+	});
+
+	console.log(`subscribing server ${postData}`);
+	req.write(postData);
+	req.end();
+
 }
 
 

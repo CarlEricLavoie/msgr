@@ -77,6 +77,12 @@ module.exports = function persistence(){
 
 			function stringInterpolate(payload){
 				for(var key in payload){
+					if(key === '{userId}'){
+						var newKey = key.replace('{userId}', response.uid);
+						payload[newKey] = payload[key]
+						delete payload[key];
+						key = newKey;
+					}
 					if(typeof payload[key] === 'string'){
 						payload[key] = payload[key].replace('{userId}', response.uid);
 					}else if(typeof payload[key] === 'number'){
